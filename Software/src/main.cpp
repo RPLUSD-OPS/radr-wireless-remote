@@ -19,23 +19,13 @@
 #include "services/memory.h"
 #include "services/vibrator.h"
 #include "services/wm.h"
-// TEST COMMENT
 #include "state/remote.h"
-
-// Function declaration for resetting middle button counter
-extern void resetMiddleButtonCounter();
 
 OneButton leftShoulderBtn;
 OneButton rightShoulderBtn;
 OneButton underLeftBtn;
 OneButton underCenterBtn;
 OneButton underRightBtn;
-
-// Global variables for middle button press tracking
-static int middleButtonPressCount = 0;
-
-// Function to reset middle button counter (can be called from device)
-void resetMiddleButtonCounter() { middleButtonPressCount = 0; }
 
 void setup() {
     Serial.begin(115200);
@@ -72,15 +62,11 @@ void setup() {
     underCenterBtn = OneButton(pins::BTN_UNDER_C, true, true);
     underCenterBtn.attachClick([]() {
         setNotIdle("under_center_btn");
-        middleButtonPressCount++;
-        if (middleButtonPressCount == 1) {
-            // First press action
-            stateMachine->process_event(middle_button_pressed());
-        } else if (middleButtonPressCount >= 2) {
-            // Second press action
-            resetMiddleButtonCounter();
-            stateMachine->process_event(middle_button_second_press());
-        }
+        stateMachine->process_event(middle_button_pressed());
+    });
+    underCenterBtn.attachLongPressStart([]() {
+        setNotIdle("under_center_btn");
+        stateMachine->process_event(middle_button_long_pressed());
     });
     underRightBtn = OneButton(pins::BTN_UNDER_R, true, true);
     underRightBtn.attachClick([]() {
